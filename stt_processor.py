@@ -127,13 +127,22 @@ class STTProcessor:
         final_sentence = results["llm_verified"].strip()
         if len(final_sentence.split()) >= 3:
             try:
-                # 1. Clean and Normalize Audio for TTS
-                audio_seg = AudioSegment.from_wav(filepath)
-                audio_seg = effects.normalize(audio_seg) # Loudness normalization for TTS
-                
-                tts_filename = os.path.basename(filepath)
-                tts_path = os.path.join(TTS_DATA_FOLDER, tts_filename)
-                audio_seg.export(tts_path, format="wav")
+                # 1. Clean and Normalize Audio for TTS (Pure Python)
+                with wave.open(filepath, 'rb') as w:
+                    params = w.getparams()
+                    frames = w.readframes(w.getnframes())
+                    samples = np.frombuffer(frames, dtype=np.int16)
+                    
+                    # Peak Normalize 
+                    peak = np.max(np.abs(samples))
+                    if peak > 0:
+                        samples = (samples / peak * 32767 * 0.9).astype(np.int16)
+                    
+                    tts_filename = os.path.basename(filepath)
+                    tts_path = os.path.join(TTS_DATA_FOLDER, tts_filename)
+                    with wave.open(tts_path, 'wb') as tts_out:
+                        tts_out.setparams(params)
+                        tts_out.writeframes(samples.tobytes())
                 
                 # 2. Update TTS metadata
                 header = "path,text\n"

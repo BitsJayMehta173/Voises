@@ -10,8 +10,8 @@ import queue
 # Constants
 SAMPLE_RATE = 16000
 CHANNELS = 1
-SILENCE_THRESHOLD = 0.01  # Energy threshold for detecting speech
-SILENCE_DURATION = 2.0     # Finalize a chunk after 2s of silence
+SILENCE_THRESHOLD = 0.005  # Increased sensitivity (Lower threshold picks up more sound)
+SILENCE_DURATION = 1.5     # Finalize a chunk after 1.5s of silence
 CHUNK_FOLDER = "audio_chunks"
 
 if not os.path.exists(CHUNK_FOLDER):
