@@ -1,0 +1,29 @@
+# Core Audio & Recording
+sounddevice
+pyaudio
+webrtcvad
+noisereduce
+pydub
+scipy
+librosa
+
+# Speech Recognition (STT/TTS Engine)
+SpeechRecognition
+faster-whisper
+vosk
+
+# NLP & Context (LLM)
+transformers
+torch
+anyascii
+sentencepiece
+
+# Data & Review
+pandas
+gradio
+sqlite3-api
+
+# System & Utilities
+psutil
+tqdm
+requests
