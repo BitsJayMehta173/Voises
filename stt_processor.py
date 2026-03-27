@@ -32,9 +32,11 @@ cursor.execute("""
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         chunk_file TEXT,
         google_trans TEXT,
-        whisper_trans TEXT,
+        whisper_roman TEXT,
+        whisper_native TEXT,
         consensus_trans TEXT,
-        llm_verified TEXT,
+        llm_verified_roman TEXT,
+        llm_verified_native TEXT,
         word_data TEXT,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -89,42 +91,50 @@ class STTProcessor:
         try:
             segments, info = self.whisper.transcribe(filepath, word_timestamps=True, task="transcribe")
             word_list = []
-            full_text = []
+            full_text_roman = []
+            full_text_native = []
             for segment in segments:
-                romanized_text = anyascii(segment.text)
-                full_text.append(romanized_text)
+                native_text = segment.text.strip()
+                roman_text = anyascii(native_text)
+                full_text_roman.append(roman_text)
+                full_text_native.append(native_text)
                 for word in segment.words:
                     word_list.append({
-                        "word": anyascii(word.word),
+                        "word_roman": anyascii(word.word),
+                        "word_native": word.word,
                         "start": word.start,
                         "end": word.end,
                         "probability": word.probability
                     })
-            results["whisper"] = " ".join(full_text)
+            results["whisper_roman"] = " ".join(full_text_roman)
+            results["whisper_native"] = " ".join(full_text_native)
             results["word_data"] = json.dumps(word_list)
         except Exception as e:
-            results["whisper"] = ""
+            results["whisper_roman"] = ""
+            results["whisper_native"] = ""
             results["word_data"] = "[]"
 
         # 3. LLM Verifier
         try:
-            results["llm_verified"] = self.verify_with_llm(results["whisper"])
+            results["llm_verified_roman"] = self.verify_with_llm(results["whisper_roman"])
+            results["llm_verified_native"] = results["whisper_native"] # Keep native as is
         except:
-            results["llm_verified"] = results["whisper"]
+            results["llm_verified_roman"] = results["whisper_roman"]
+            results["llm_verified_native"] = results["whisper_native"]
 
         # Consensus logic
         verified_text = []
-        w_text = results["whisper"].lower()
+        w_text = results["whisper_roman"].lower()
         g_text = results["google"].lower()
         for w_json in json.loads(results["word_data"]):
-            word = w_json["word"].strip().lower()
+            word = w_json["word_roman"].strip().lower()
             if word in g_text or word in w_text:
                 verified_text.append(word)
         results["consensus"] = " ".join(verified_text)
 
         # 🚀 [NEW] TTS DATA SAVE (Full Sentence/Sentence Level)
         # We only save to TTS if the sentence is clear (whisper or google found something)
-        final_sentence = results["llm_verified"].strip()
+        final_sentence = results["llm_verified_roman"].strip()
         if len(final_sentence.split()) >= 3:
             try:
                 # 1. Clean and Normalize Audio for TTS (Pure Python)
@@ -158,11 +168,11 @@ class STTProcessor:
 
         # Save to DB
         cursor.execute("""
-            INSERT INTO transcriptions (chunk_file, google_trans, whisper_trans, consensus_trans, llm_verified, word_data)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (filepath, results["google"], results["whisper"], results["consensus"], results["llm_verified"], results["word_data"]))
+            INSERT INTO transcriptions (chunk_file, google_trans, whisper_roman, whisper_native, consensus_trans, llm_verified_roman, llm_verified_native, word_data)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (filepath, results["google"], results["whisper_roman"], results["whisper_native"], results["consensus"], results["llm_verified_roman"], results["llm_verified_native"], results["word_data"]))
         conn.commit()
-        print(f"STT Verified: {results['llm_verified'][:30]}...")
+        print(f"STT Verified: {results['llm_verified_roman'][:30]}...")
 
     def run(self):
         print("Dual STT/TTS System monitoring folder...")

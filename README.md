@@ -1,57 +1,61 @@
-# 🎤 24/7 Voice Dataset Collector (Pro-Edition)
+# 🎤 24/7 Expert Voice Dataset Collector (Pro-Edition)
 
-This is a comprehensive, automated background system designed to build high-quality datasets for both **Speech Recognition (STT)** and **Speech Synthesis/Voice Cloning (TTS)**, specifically optimized for **Indian Accents** and **Hinglish**.
+This is a state-of-the-art, automated background system designed to build high-quality datasets for **Speech Recognition (STT)** and **Speech Synthesis/Voice Cloning (TTS)**. Specifically engineered for **Indian Accents**, **Hinglish**, and **Devnagri Script Support**.
 
-## 🛠️ The Pipeline Architecture
+## 🛠️ The Expert Pipeline Architecture
 
-1.  **`audio_recorder.py` (The Listener)**:
+1.  **`audio_recorder.py` (Smart Listener)**:
     - Runs in the background with **Voice Activity Detection (VAD)**.
-    - Captures speech "chunks" (5-10s) only when you are talking.
-    - Ignores silence to save disk space.
+    - Captures high-quality 24-bit 44.1kHz or 16-bit 16kHz speech chunks.
+    - **Zero-Data Loss**: Only saves when you are actively speaking.
 
 2.  **`stt_processor.py` (The Multi-Engine Brain)**:
-    - **AI Consensus**: Transcribes each chunk using **Google STT (en-IN)** and **OpenAI Whisper (Local)**.
-    - **Romanization**: Automatically converts any Hindi/Urdu script (e.g., `नाम`) into English letters (`naam`) using `anyascii`.
-    - **Context Verification (LLM)**: Uses a **BERT Masked Language Model** to verify if words "make sense" in the context of the sentence.
-    - **TTS Dataset**: Automatically saves full, normalized sentences for voice synthesis into `dataset/tts_data/`.
+    - **AI Committee**: Transcribes every spoken phrase using **Google STT (en-IN)** and **OpenAI Whisper (Local)**.
+    - **Multi-Script Storage**: Saves both **Romanized English** (e.g., `mera naam`) and **Native Devnagri Script** (e.g., `मेरा नाम`).
+    - **LLM Verification**: Uses a **BERT Multilingual Brain** to check if your speech "makes sense" in context.
+    - **TTS Dataset**: Automatically saves full, normalized sentences for voice cloning into `dataset/tts_data/`.
 
-3.  **`dataset_cutter.py` (The Refiner)**:
+3.  **`dataset_cutter.py` (The Audio Lab - Zero Dependency)**:
     - Extracts individual words from speech with **60ms of padding**.
-    - Applies **Loudness Normalization** (-1.0dB) to all clips.
-    - Uses **AI Noise Reduction** (`noisereduce`) to remove laptop fans and keyboard sounds.
-    - **Diversity Capping**: Limits each word to 50 high-quality samples to prevent dataset bias.
+    - **Pure-Python Normalization**: No external FFmpeg required.
+    - **AI Noise Reduction** (`noisereduce`): Automatically removes laptop fans, typing sounds, and background hum.
+    - **Multi-Model Metadata**: Keeps a record of every engine's "opinion" for every word clip.
 
-4.  **`toggle_system.py` (The Switch)**:
-    - A "Pause/Play" toggle that **suspends** the background processes. It saves 100% of CPU during breaks but keeps the AI models in memory for instant resumption.
+4.  **`toggle_system.py` (The Efficiency Switch)**:
+    - A "Pause/Play" toggle that **suspends** background processes.
+    - **Saves 100% CPU** while paused, but keeps the heavy AI models in memory for instant resumption.
 
-5.  **`dashboard.py` (The Reviewer)**:
-    - A **Gradio-based web dashboard** to listen to, verify, or delete your collected samples.
+5.  **`dashboard.py` (Human-in-the-Loop Reviewer)**:
+    - **Expert Mode Review**: Shows Google Thought, Whisper Thought, and BERT Thought side-by-side.
+    - **Manual Correction**: Edit any transcript and save it as a "Corrected" (Gold Standard) sample.
+    - **Status Filtering**: Filter by "Weak," "Verified," or "Corrected" to focus your efforts.
 
 ---
 
 ## 🚀 How to Use
 
-1.  **Initialize & Start**:
+1.  **Initialize & Start Recording**:
     ```bash
     python run_all.py
     ```
 
-2.  **Pause/Resume Listening**:
+2.  **Pause/Resume Listening (CPU Saver)**:
     ```bash
     python toggle_system.py
     ```
 
-3.  **Review Your Data**:
+3.  **Expert Review & Manual Correction**:
+    - Build your dataset first, then run:
     ```bash
     python dashboard.py
     ```
-
-4.  **Your Final Dataset**:
-    - **STT (Words)**: `dataset/audio/` + `metadata.csv`
-    - **TTS (Sentences)**: `dataset/tts_data/` + `tts_metadata.csv`
+    - Visit **`http://127.0.0.1:7860/`** to verify and edit your data.
 
 ---
 
-## 🔒 Privacy & Optimization
-- **Privacy**: High-level transcription (Whisper and BERT) happens **locally on your machine**. 
-- **Feasibility**: Designed for 3-4 hours of daily use. 30 hours of data is the "Sweet Spot" for a perfect personal voice model.
+## 📂 Dataset Locations
+- **STT (Word clips)**: `dataset/audio/` + `metadata.csv` (Roman and Native script included).
+- **TTS (Sentences)**: `dataset/tts_data/` + `tts_metadata.csv` (High-fidelity full recordings).
+
+## 🔒 Privacy & Speed
+All heavy transcription (Whisper/BERT) happens **locally on your machine**. Your voice recordings never leave your laptop unless you explicitly share them.

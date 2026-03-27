@@ -1,29 +1,28 @@
-# Core Audio & Recording
+# Core Audio & Recording (Background Processor)
 sounddevice
 pyaudio
 webrtcvad
 noisereduce
-pydub
 scipy
 librosa
 
-# Speech Recognition (STT/TTS Engine)
+# Speech Recognition (AI Engine)
 SpeechRecognition
 faster-whisper
 vosk
 
-# NLP & Context (LLM)
+# NLP & Contextual Logic (Devnagri Support)
 transformers
 torch
 anyascii
 sentencepiece
 
-# Data & Review
+# Expert Review & Data Control
 pandas
 gradio
 sqlite3-api
 
-# System & Utilities
+# System & Terminal Utilities
 psutil
 tqdm
 requests
